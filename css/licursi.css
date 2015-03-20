@@ -244,12 +244,14 @@
 }
 
 .ui-rangeSlider .ui-ruler-scale0 .ui-ruler-tick-inner{
-  color:white;
-  margin-top:1px;
-  border-left: 1px solid white;
-  height:29px;
-  padding-left:2px;
-  position:relative;
+ 	border-left: 1px solid white;
+    color: white;
+    font-size: 11px;
+    height: 18px;
+    margin-top: 1px;
+    padding-left: 2px;
+    position: relative;
+    z-index: 3;
 }
 
 .ui-rangeSlider .ui-ruler-scale0 .ui-ruler-tick-label{
@@ -259,6 +261,7 @@
 
 .ui-rangeSlider .ui-ruler-scale1 .ui-ruler-tick-inner{
   border-left:1px solid white;
-  margin-top: 25px;
-  height: 5px;
+  margin-top: 14px;
+  height: 4px;
+  z-index: 3;
 }
