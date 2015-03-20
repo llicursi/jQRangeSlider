@@ -322,7 +322,6 @@
 		},
 
 
-
 		_createEnabledOption: function(){
 			this._createDT("Enabled");
 
