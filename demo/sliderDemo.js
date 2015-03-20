@@ -292,7 +292,33 @@
 		
 		_activeScales: function(e){
 			var checked = $(e.target).is(":checked");
-			this._setOption("scales", checked);
+			if (checked){
+				this._setOption("scales", [
+	   				{
+	   					first: function(val){ return val; },
+	   					next: function(val){ return val + 10; },
+	   					stop: function(val){ return false; },
+	   					label: function(val){ return val; },
+	   					format: function(tickContainer, tickStart, tickEnd){
+	   						tickContainer.addClass("myCustomClass");
+	   					}
+	   				},
+	   				// Secondary scale
+	   				{
+	   					first: function(val){ return val; },
+	   					next: function(val){
+	   						if (val % 10 === 9){
+	   							return val + 2;
+	   						}
+	   						return val + 1;
+	   					},
+	   					stop: function(val){ return false; },
+	   					label: function(){ return null; }
+	   				}]
+	   			);
+			} else {
+				this._setOption("scales", checked);
+			}
 		},
 
 
@@ -364,7 +390,7 @@
 
 			this._bindEvents();
 		},
-
+		
 		_bindEvents: function(){
 			this._elements.slider.bind("valuesChanging valuesChanged userValuesChanged", $.proxy(this._log, this));
 		},
