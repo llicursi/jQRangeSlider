@@ -68,7 +68,7 @@
 			var month = value.getMonth() + 1,
 				day = value.getDate();
 
-			return "" + value.getFullYear() + "-" + (month < 10 ? "0" + month : month) + "-" + (day < 10 ? "0" + day : day);
+			return "" + (day < 10 ? "0" + day : day)  + "/" + (month < 10 ? "0" + month : month) + "/" + value.getFullYear();
 		},
 
 		_getFormatter: function(){

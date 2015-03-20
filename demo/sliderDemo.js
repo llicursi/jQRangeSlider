@@ -258,14 +258,24 @@
 		},
 
 		_createArrowsOption: function(){
-			this._createDT("Arrows");
+			this._createDT("Options");
 
-			var label = $("<label>Activate arrows</label>"),
-				input = $("<input type='checkbox' name='arrows' checked='checked' />").prependTo(label);
+			var label = $("<label>Activate arrows</label>");
+			var input = $("<input type='checkbox' name='arrows' checked='checked' />").prependTo(label);
+			input.click($.proxy(this._activateArrows, this));
+			this._createDD(label);
+			
 
+			var label = $("<label>Compact</label>");
+			var	input = $("<input type='checkbox' name='compact' />").prependTo(label);
+			input.click($.proxy(this._activateCompactMode, this));
 			this._createDD(label);
 
-			input.click($.proxy(this._activateArrows, this));
+			var label = $("<label>Scales</label>");
+			var	input = $("<input type='checkbox' name='scales' />").prependTo(label);
+			input.click($.proxy(this._activeScales, this));
+			this._createDD(label);
+			
 		},
 
 		_activateArrows: function(e){
@@ -273,6 +283,19 @@
 
 			this._setOption("arrows", checked);
 		},
+		
+		_activateCompactMode: function(e){
+			var checked = $(e.target).is(":checked");
+
+			this._setOption("compact", checked);
+		},
+		
+		_activeScales: function(e){
+			var checked = $(e.target).is(":checked");
+			this._setOption("scales", checked);
+		},
+
+
 
 		_createEnabledOption: function(){
 			this._createDT("Enabled");

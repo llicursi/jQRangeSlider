@@ -16,6 +16,7 @@
 			defaultValues: {min:20, max:50},
 			wheelMode: null,
 			wheelSpeed: 4,
+			compact: false,
 			arrows: true,
 			valueLabels: "show",
 			formatter: null,
@@ -90,7 +91,8 @@
 
 		_setOption: function(key, value) {
 			this._setWheelOption(key, value);		
-			this._setArrowsOption(key, value);
+			this._setArrowsOption(key, value);		
+			this._setCompactOption(key, value);
 			this._setLabelsOption(key, value);
 			this._setLabelsDurations(key, value);
 			this._setFormatterOption(key, value);
@@ -200,6 +202,20 @@
 				this._initWidth();
 			}
 		},
+		
+		_setCompactOption: function(key, value){
+			if (key === "compact" && (value === true || value === false) && value !== this.options.compact){
+				if (value === true){
+					this.element.addClass("ui-rangeSlider-compact");
+					this.options.compact = true;
+				}else if (value === false){
+					this.element.removeClass("ui-rangeSlider-compact");
+					this.options.compact = false;
+				}
+
+				this._initWidth();
+			}
+		},
 
 		_setLabelsDurations: function(key, value){
 			if (key === "durationIn" || key === "durationOut" || key === "delayOut"){
@@ -265,7 +281,7 @@
 		_createHandle: function(options){
 			return $("<div />")[this._handleType()](options)
 				.bind("sliderDrag", $.proxy(this._changing, this))
-				.bind("stop", $.proxy(this._changed, this));
+				.bind("stop", $.proxy(this._changed, this)).html("|||");
 		},
 
 		_createHandles: function(){
