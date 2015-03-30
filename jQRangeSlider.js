@@ -100,6 +100,8 @@
 			this._setRangeOption(key, value);
 			this._setStepOption(key, value);
 			this._setScalesOption(key, value);
+			this._setScaleInsideOption(key, value);
+			this._setScaleOutsideOption(key, value);
 			this._setEnabledOption(key, value);
 			this._setPositionningOption(key, value);
 		},
@@ -118,18 +120,6 @@
 				this._leftHandle("option", "step", value);
 				this._rightHandle("option", "step", value);
 				this._changed(true);
-			}
-		},
-
-		_setScalesOption: function(key, value){
-			if (key === "scales"){
-				if (value === false || value === null){
-					this.options.scales = false;
-					this._destroyRuler();
-				}else if (value instanceof Array){
-					this.options.scales = value;
-					this._updateRuler();
-				}
 			}
 		},
 
@@ -168,6 +158,38 @@
 					this._rightLabel("update");
 				}else{
 					this._destroyLabels();
+				}
+			}
+		},
+		_setScalesOption: function(key, value){
+			if (key === "scales"){
+				if (this.options.scales != false){
+					this.options.scales = false;
+					this._destroyRuler();
+					this.element.removeClass("ui-rangeSlider-scale-outside");
+					this.element.removeClass("ui-rangeSlider-scale-inside");
+				}
+			}
+		},
+		
+		_setScaleInsideOption: function(key, value){
+			if (key === "scalesinside"){
+				if (value instanceof Array){
+					this.element.removeClass("ui-rangeSlider-scale-outside");
+					this.element.addClass("ui-rangeSlider-scale-inside");
+					this.options.scales = value;
+					this._updateRuler();
+				}
+			}
+		},
+		
+		_setScaleOutsideOption: function(key, value){
+			if (key === "scalesoutside"){
+				if (value instanceof Array){
+					this.element.removeClass("ui-rangeSlider-scale-inside");
+					this.element.addClass("ui-rangeSlider-scale-outside");
+					this.options.scales = value;
+					this._updateRuler();
 				}
 			}
 		},
@@ -624,14 +646,34 @@
 			this._bar("stopScroll");
 			clearTimeout(this._scrollTimeout);
 		},
-
+		
 		/*
 		 * Ruler
 		 */
 		_createRuler: function(){
 			this.ruler = $("<div class='ui-rangeSlider-ruler' />").appendTo(this.innerBar);
+			this.ruler.bind("tickClick", this, this._tickClick);
 		},
 
+		_tickClick : function( event, tick){
+			var max = event.data.values().max;
+			var min = event.data.values().min;
+			if (tick.values.max == max || tick.values.min == min){
+				event.data.values(tick.values.min, tick.values.max);
+			} else if (tick.values.min == min && tick.values.max == max){
+				//Do nothing
+			} else {
+				var avg = Math.round(tick.values.max - (tick.values.max - tick.values.min)/2);
+				var distToRightHandler = Math.abs(avg - event.data.values().max);
+				var distToLeftHandler = Math.abs(avg - event.data.values().min);
+				if (distToRightHandler < distToLeftHandler){
+					event.data.values(min, tick.values.max);
+				} else {
+					event.data.values(tick.values.min, max);
+				}
+			}
+		},
+		
 		_setRulerParameters: function(){
 			this.ruler.ruler({
 				min: this.options.bounds.min,
@@ -639,6 +681,8 @@
 				scales: this.options.scales
 			});
 		},
+		
+		
 
 		_destroyRuler: function(){
 			if (this.ruler !== null && $.fn.ruler){

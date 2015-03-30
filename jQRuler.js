@@ -44,6 +44,14 @@
 			this.element.removeClass("ui-ruler");
 			this.element.empty();
 		},
+		
+		_trigger: function(eventName, object){
+			var that = this;
+
+			setTimeout(function(){
+				that.element.trigger(eventName, object);
+			}, 1);
+		},
 
 		_regenerate: function(){
 			this.element.empty();
@@ -117,10 +125,26 @@
 				inner = $("<div class='ui-ruler-tick-inner' />").appendTo(container),
 				label = $("<span class='ui-ruler-tick-label' />").appendTo(inner);
 
-			label.text(scaleOptions.label(start, end));
+			var that = this;
+			var textLabel = scaleOptions.label(start, end);
+			label[0].onclick = function () {that._tickClick(start, end, textLabel, scaleOptions)};
+			label.text(textLabel);
 			scaleOptions.format(container, start, end);
 
 			return container;
+		},
+		
+		_tickClick: function(start, end, textLabel, scaleOptions){
+			var params = {
+				values: { 
+					min : start,
+					max : end
+					},
+				label : textLabel,
+				options : scaleOptions
+			};
+			
+			this._trigger("tickClick", params);
 		}
 	});
 

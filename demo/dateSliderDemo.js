@@ -1,11 +1,20 @@
-
-
+var _months = {
+		enUS : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+		esES : ["Jan", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dec"],
+		ptBR : ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+	};
+var _CONSTRAINTS = {
+	SCALE_TYPE_YEAR : "YEAR",
+	SCALE_TYPE_MONTH : "MONTH",
+	SCALE_TYPE_DAY : "DAY",
+	};
 (function($, undefined){
 	"use strict";
 
 	$.widget("ui.dateSliderDemo", $.ui.sliderDemo, {
 		options: {},
 		_title: "Date values",
+		_scaleType : _CONSTRAINTS.SCALE_TYPE_MONTH,
 		_name: "dateRangeSlider",
 
 		_createInputs: function(){
@@ -33,13 +42,13 @@
 			var minSelect = this._createSelect("min", "Bound"),
 				maxSelect = this._createSelect("max", "Bound");
 
-			this._addDateOption(minSelect, new Date(2010, 0, 1));
-			this._addDateOption(minSelect, new Date(2010, 2, 1));
+			this._addDateOption(minSelect, new Date(2008, 0, 1));
+			this._addDateOption(minSelect, new Date(2009, 2, 1));
 			this._addDateOption(minSelect, new Date(2010, 5, 1));
 
-			this._addDateOption(maxSelect, new Date(2011, 11, 31, 11, 59, 59));
-			this._addDateOption(maxSelect, new Date(2011, 8, 31, 11, 59, 59));
-			this._addDateOption(maxSelect, new Date(2011, 5, 30, 11, 59, 59));
+			this._addDateOption(maxSelect, new Date(2013, 11, 31, 11, 59, 59));
+			this._addDateOption(maxSelect, new Date(2012, 8, 31, 11, 59, 59));
+			this._addDateOption(maxSelect, new Date(2010, 6, 4, 11, 59, 59));
 
 			minSelect.bind("change", "min", $.proxy(this._changeBound, this));
 			maxSelect.bind("change", "max", $.proxy(this._changeBound, this));
@@ -54,7 +63,29 @@
 				bounds = this._getOption("bounds");
 
 			bounds[event.data] = new Date(parseFloat(value));
+			this._calculateScales(bounds);
 			this._setOption("bounds", bounds);
+		},
+		
+		_calculateScales: function(bounds){
+			var endDate = bounds["max"];
+			var startDate = bounds["min"];
+			var years = endDate.getFullYear() - startDate.getFullYear();
+			if (years < 0){
+				years = years*1;
+			}
+			
+			if (years > 2){
+				this._scaleType = _CONSTRAINTS.SCALE_TYPE_YEAR;
+			} else {
+				var months = (endDate.getMonth() -startDate.getMonth()) + (years * 12);
+				var days = (endDate.getDate() - startDate.getDate()) + (months * 30);
+				if (days > 36){
+					this._scaleType = _CONSTRAINTS.SCALE_TYPE_MONTH;
+				} else {
+					this._scaleType = _CONSTRAINTS.SCALE_TYPE_DAY;
+				}
+			}
 		},
 
 		_createStepOption: function(){
@@ -85,14 +116,15 @@
 
 		_addPicker: function(input){
 			input.datepicker({
-				maxDate: new Date(2012,0,1),
-				minDate: new Date(2010,0,1),
+				maxDate: new Date(2013, 11, 31, 11, 59, 59),
+				minDate: new Date(2008, 0, 1),
 				dateFormat: "yy-mm-dd",
 				buttonImage: "img/calendar.png",
 				buttonImageOnly: true,
 				buttonText: "Choose a date",
 				showOn: "both"
 				});
+			this._calculateScales();
 		},
 
 		_format: function(value){
@@ -134,10 +166,78 @@
 
 			this._setOption("range", option);
 		},
-
+		
+		_scaleNextDate: function(value, obj){
+			var next = new Date(value);
+			
+			if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
+				return new Date(next.setFullYear(parseInt(value.getFullYear()) + 1));
+				
+			} else if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
+				var month = parseInt(value.getMonth()) + 1;
+				if (month > 11){
+					month -= 12;
+					next.setFullYear(parseInt(value.getFullYear()) + 1);
+				}
+				next.setMonth(month);
+				return new Date(next);
+				
+			} else {
+				var day = parseInt(value.getDate()) + 1;
+				if (day > this._daysInMonth(value.getMonth(), value.getFullYear())){
+					day = 1;
+					next.setMonth(parseInt(value.getMonth()) + 1);
+				}
+				next.setDate(day);
+				return new Date(next);
+			}
+		},
+		
+		_daysInMonth: function(month,year) {
+		    return new Date(year, month, 0).getDate();
+		},
+		
+		_scaleLabelDate: function(value){
+			
+			if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
+				return "" + value.getFullYear();
+			} else if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
+				return (value.getMonth() == 0 ? 
+						 value.getFullYear() :
+						_months["ptBR"][value.getMonth()]);
+			} else {
+				return  (value.getDate() == 1 ? 
+						_months["ptBR"][value.getMonth()]  : 
+						value.getDate());
+			}
+			
+		},
+		
+		_activeScales: function () {
+			
+			var that = this;
+			var scaleNextDate = function (value){
+				return that._scaleNextDate(value, that);
+			};
+			
+			var scaleLabelDate = function (value){
+				return that._scaleLabelDate(value, that);
+			};
+			
+			return 	[{
+			first: function(value){ return value; },
+		    end: function(value) {return value; },
+		    next: scaleNextDate,
+	        label: scaleLabelDate,
+		    format: function(tickContainer, tickStart, tickEnd){
+		      tickContainer.addClass("myCustomClass");
+		    }
+		  }]
+		},
+		
 		_returnValues: function(data){
 			try{
-				return "min:" + this._format(data.values.min) + " max:" + this._format(data.values.max);	
+				return "min:" + this._format(data.values.min) + " max:" + this._format(data.values.max) + (data.label ? " label: " + data.label : "");
 			} catch (e){
 				return e;
 			}
@@ -147,3 +247,5 @@
 	});
 
 })(jQuery);
+
+_months

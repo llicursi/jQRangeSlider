@@ -48,7 +48,45 @@
 
 			this._setOption(name, value);
 		},
+		
+		_scaleOptionChange: function(e){
+			var target = $(e.target),
+				value = target.val(),
+				name = target.attr("name");
 
+			if (value === "false"){
+				value = false
+				this._setOption("scales", value);
+			} else if (value === "inside" || value === "outside"){
+				this._setOption("scales" + value, this._activeScales());
+			}
+		},
+		
+		_activeScales : function () {
+			return [{
+		
+				first: function(val){ return val; },
+				next: function(val){ return val + 10; },
+				stop: function(val){ return false; },
+				label: function(val){ return val; },
+				format: function(tickContainer, tickStart, tickEnd){
+					tickContainer.addClass("myCustomClass");
+				}
+			},
+			// Secondary scale
+			{
+				first: function(val){ return val; },
+				next: function(val){
+					if (val % 10 === 9){
+						return val + 2;
+					}
+					return val + 1;
+				},
+				stop: function(val){ return false; },
+				label: function(){ return null; }
+			}]
+		},
+		
 		_createZones: function(){
 			var wrapper = $("<div class='wrapper' />").appendTo(this.element),
 			inputZone = $("<div class='sliderZone' />").appendTo(wrapper),
@@ -101,6 +139,7 @@
 			this._createWheelModeOption();
 			this._createWheelSpeedOption();
 			this._createArrowsOption();
+			this._createScalesOption();
 			this._createLabelsOption();
 			this._createEnabledOption();
 		},
@@ -270,11 +309,6 @@
 			var	input = $("<input type='checkbox' name='compact' />").prependTo(label);
 			input.click($.proxy(this._activateCompactMode, this));
 			this._createDD(label);
-
-			var label = $("<label>Scales</label>");
-			var	input = $("<input type='checkbox' name='scales' />").prependTo(label);
-			input.click($.proxy(this._activeScales, this));
-			this._createDD(label);
 			
 		},
 
@@ -290,38 +324,6 @@
 			this._setOption("compact", checked);
 		},
 		
-		_activeScales: function(e){
-			var checked = $(e.target).is(":checked");
-			if (checked){
-				this._setOption("scales", [
-	   				{
-	   					first: function(val){ return val; },
-	   					next: function(val){ return val + 10; },
-	   					stop: function(val){ return false; },
-	   					label: function(val){ return val; },
-	   					format: function(tickContainer, tickStart, tickEnd){
-	   						tickContainer.addClass("myCustomClass");
-	   					}
-	   				},
-	   				// Secondary scale
-	   				{
-	   					first: function(val){ return val; },
-	   					next: function(val){
-	   						if (val % 10 === 9){
-	   							return val + 2;
-	   						}
-	   						return val + 1;
-	   					},
-	   					stop: function(val){ return false; },
-	   					label: function(){ return null; }
-	   				}]
-	   			);
-			} else {
-				this._setOption("scales", checked);
-			}
-		},
-
-
 		_createEnabledOption: function(){
 			this._createDT("Enabled");
 
@@ -349,6 +351,20 @@
 			this._createDD(select);
 
 			select.change($.proxy(this._easyOptionChange, this));
+		},
+		
+		_createScalesOption: function(){
+			this._createDT("Scales");
+
+			var select = $("<select name='scalesOptions' />");
+
+			this._addOption(select, "false");
+			this._addOption(select, "Show Inside", "inside");
+			this._addOption(select, "Show Outside", "outside");
+
+			this._createDD(select);
+
+			select.change($.proxy(this._scaleOptionChange, this));
 		},
 
 		_createCode: function(){
@@ -391,7 +407,7 @@
 		},
 		
 		_bindEvents: function(){
-			this._elements.slider.bind("valuesChanging valuesChanged userValuesChanged", $.proxy(this._log, this));
+			this._elements.slider.bind("valuesChanging valuesChanged userValuesChanged tickClick", $.proxy(this._log, this));
 		},
 
 		_log: function(e, data){
