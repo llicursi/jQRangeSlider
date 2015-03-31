@@ -4,6 +4,7 @@ var _months = {
 		ptBR : ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 	};
 var _CONSTRAINTS = {
+	SCALE_TYPE_NONE : "NONE",
 	SCALE_TYPE_YEAR : "YEAR",
 	SCALE_TYPE_MONTH : "MONTH",
 	SCALE_TYPE_DAY : "DAY",
@@ -167,13 +168,13 @@ var _CONSTRAINTS = {
 			this._setOption("range", option);
 		},
 		
-		_scaleNextDate: function(value, obj){
+		_scaleNextDate: function(value, scaleType){
 			var next = new Date(value);
 			
-			if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
+			if (scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
 				return new Date(next.setFullYear(parseInt(value.getFullYear()) + 1));
 				
-			} else if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
+			} else if (scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
 				var month = parseInt(value.getMonth()) + 1;
 				if (month > 11){
 					month -= 12;
@@ -182,7 +183,7 @@ var _CONSTRAINTS = {
 				next.setMonth(month);
 				return new Date(next);
 				
-			} else {
+			} else if (scaleType == _CONSTRAINTS.SCALE_TYPE_DAY){
 				var day = parseInt(value.getDate()) + 1;
 				if (day > this._daysInMonth(value.getMonth(), value.getFullYear())){
 					day = 1;
@@ -190,6 +191,8 @@ var _CONSTRAINTS = {
 				}
 				next.setDate(day);
 				return new Date(next);
+			} else {
+				return new Date(next.setFullYear(parseInt(value.getFullYear()) + 100));
 			}
 		},
 		
@@ -197,18 +200,16 @@ var _CONSTRAINTS = {
 		    return new Date(year, month, 0).getDate();
 		},
 		
-		_scaleLabelDate: function(value){
+		_scaleLabelDate: function(value, scaleType){
 			
-			if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
+			if (scaleType == _CONSTRAINTS.SCALE_TYPE_YEAR){
 				return "" + value.getFullYear();
-			} else if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
-				return (value.getMonth() == 0 ? 
-						 value.getFullYear() :
-						_months["ptBR"][value.getMonth()]);
+			} else if (scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH){
+				return _months["ptBR"][value.getMonth()];
+			} else  if (scaleType == _CONSTRAINTS.SCALE_TYPE_DAY){
+				return  (value.getDate());
 			} else {
-				return  (value.getDate() == 1 ? 
-						_months["ptBR"][value.getMonth()]  : 
-						value.getDate());
+				return "";
 			}
 			
 		},
@@ -217,22 +218,53 @@ var _CONSTRAINTS = {
 			
 			var that = this;
 			var scaleNextDate = function (value){
-				return that._scaleNextDate(value, that);
+				return that._scaleNextDate(value, that._scaleType);
 			};
 			
 			var scaleLabelDate = function (value){
-				return that._scaleLabelDate(value, that);
+				return that._scaleLabelDate(value, that._scaleType);
 			};
 			
-			return 	[{
-			first: function(value){ return value; },
-		    end: function(value) {return value; },
-		    next: scaleNextDate,
-	        label: scaleLabelDate,
-		    format: function(tickContainer, tickStart, tickEnd){
-		      tickContainer.addClass("myCustomClass");
-		    }
-		  }]
+			var activeScale = [{
+				first: function(value){ return value; },
+			    end: function(value) {return value; },
+			    next: scaleNextDate,
+		        label: scaleLabelDate,
+			    format: function(tickContainer, tickStart, tickEnd){
+			      tickContainer.addClass("myCustomClass");
+			    }
+			}];
+			
+			if (this._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH || this._scaleType == _CONSTRAINTS.SCALE_TYPE_DAY){
+				this._addSecundaryScale(activeScale);
+			}
+			
+			return activeScale;
+		},
+		
+		_addSecundaryScale: function (activeScale) {
+
+			var that = this;
+			var scaleNextDateSecundary = function (value){
+				var secundaryScaleType = ((that._scaleType == _CONSTRAINTS.SCALE_TYPE_DAY) ? _CONSTRAINTS.SCALE_TYPE_MONTH : ((that._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH) ?  _CONSTRAINTS.SCALE_TYPE_YEAR : _CONSTRAINTS.SCALE_TYPE_NONE ));
+				return that._scaleNextDate(value, secundaryScaleType);
+			};
+			
+			var scaleLabelDateSecundary = function (value){
+				var secundaryScaleType = ((that._scaleType == _CONSTRAINTS.SCALE_TYPE_DAY) ? _CONSTRAINTS.SCALE_TYPE_MONTH : ((that._scaleType == _CONSTRAINTS.SCALE_TYPE_MONTH) ?  _CONSTRAINTS.SCALE_TYPE_YEAR : _CONSTRAINTS.SCALE_TYPE_NONE ));
+				return that._scaleLabelDate(value, secundaryScaleType);
+			};
+			
+			activeScale.push({
+				first: function(value){ return value; },
+			    end: function(value) {return value; },
+			    next: scaleNextDateSecundary,
+		        label: scaleLabelDateSecundary,
+			    format: function(tickContainer, tickStart, tickEnd){
+			      tickContainer.addClass("myCustomClass");
+			    }
+			});
+			
 		},
 		
 		_returnValues: function(data){

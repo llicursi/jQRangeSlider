@@ -142,6 +142,10 @@
 			this.element.toggleClass("ui-rangeSlider-leftLabel", this.options.isLeft)
 				.toggleClass("ui-rangeSlider-rightLabel", !this.options.isLeft);
 		},
+		
+		_toggleMargin : function(){
+			this._positionner.switchMargin();
+		},
 
 		_positionLabels: function(){
 			this._positionner.PositionLabels();
@@ -349,11 +353,11 @@
 			var label1Pos = this.GetRawPosition(this.cache.label1, this.cache.handle1),
 				label2Pos = this.GetRawPosition(this.cache.label2, this.cache.handle2);
 
-			if (this.label1[type]("option", "isLeft")){
+/*			if (this.label1[type]("option", "isLeft")){
 				this.ConstraintPositions(label1Pos, label2Pos);
 			}else{
 				this.ConstraintPositions(label2Pos, label1Pos);
-			}
+			}*/
 
 			this.PositionLabel(this.label1, label1Pos.left, this.cache.label1);
 			this.PositionLabel(this.label2, label2Pos.left, this.cache.label2);
@@ -367,7 +371,7 @@
 
 			if ((parentShift - leftOffset) >= 0){
 				label.css("right", "");
-				label.offset({left: leftOffset});
+				label.offset({left: leftOffset + cache.margin.left});
 			}else{
 				parentRightPosition = parentShift + this.cache.offsetParent.width;
 				labelRightPosition = leftOffset + cache.margin.left + cache.outerWidth + cache.margin.right;

@@ -303,7 +303,7 @@
 		_createHandle: function(options){
 			return $("<div />")[this._handleType()](options)
 				.bind("sliderDrag", $.proxy(this._changing, this))
-				.bind("stop", $.proxy(this._changed, this)).html("|||");
+				.bind("stop", $.proxy(this._changed, this));
 		},
 
 		_createHandles: function(){
@@ -656,20 +656,24 @@
 		},
 
 		_tickClick : function( event, tick){
-			var max = event.data.values().max;
-			var min = event.data.values().min;
-			if (tick.values.max == max || tick.values.min == min){
-				event.data.values(tick.values.min, tick.values.max);
-			} else if (tick.values.min == min && tick.values.max == max){
+			var maxValue = event.data.values().max;
+			var minValue = event.data.values().min;
+			
+			var maxPosition = (tick.values.max.getTime() > event.data.options.bounds.max) ? new Date(event.data.options.bounds.max) : tick.values.max;
+			var minPosition = (tick.values.min.getTime() < event.data.options.bounds.min) ? new Date(event.data.options.bounds.min) : tick.values.min;
+			
+			if (maxPosition.getTime() == maxValue.getTime() || minPosition.getTime() == minValue.getTime()){
+				event.data.values(minPosition, maxPosition);
+			} else if (minPosition.getTime() == minValue.getTime() && maxPosition.getTime() == maxValue.getTime()){
 				//Do nothing
 			} else {
-				var avg = Math.round(tick.values.max - (tick.values.max - tick.values.min)/2);
+				var avg = Math.round(maxPosition - (maxPosition - minPosition)/2);
 				var distToRightHandler = Math.abs(avg - event.data.values().max);
 				var distToLeftHandler = Math.abs(avg - event.data.values().min);
 				if (distToRightHandler < distToLeftHandler){
-					event.data.values(min, tick.values.max);
+					event.data.values(minValue, maxPosition);
 				} else {
-					event.data.values(tick.values.min, max);
+					event.data.values(minPosition, maxValue);
 				}
 			}
 		},
