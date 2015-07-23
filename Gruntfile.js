@@ -13,7 +13,8 @@ var rulerFiles = ["jQRuler.js"];
 
 var dateFiles = [
     "jQDateRangeSlider.js",
-    "jQDateRangeSliderHandle.js"];
+    "jQDateRangeSliderHandle.js",
+    "jQDateRangeSliderLabel.js"];
 
 var editFiles = [
     "jQEditRangeSlider.js",
@@ -104,7 +105,8 @@ module.exports = function(grunt) {
       compress: {
         files: {
           "dest/css/iThing-min.css": ["css/iThing.css"],
-          "dest/css/classic-min.css": ["css/classic.css"]
+          "dest/css/classic-min.css": ["css/classic.css"],
+          "dest/css/licursi-min.css": ["css/licursi.css"]
         }
       }
     },

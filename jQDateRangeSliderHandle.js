@@ -18,7 +18,7 @@
 			this._createBoundsValues();
 			$.ui.rangeSliderHandle.prototype._create.apply(this);
 		},
-
+		
 		_getValueForPosition: function(position){
 			
 			var raw = this._getRawValueForPositionAndBounds(position, this.options.bounds.min.valueOf(), this.options.bounds.max.valueOf());

@@ -528,7 +528,8 @@
 				show: this.options.valueLabels,
 				durationIn: this.options.durationIn,
 				durationOut: this.options.durationOut,
-				delayOut: this.options.delayOut
+				delayOut: this.options.delayOut,
+				bounds: this.options.bounds
 			};
 		},
 
@@ -663,7 +664,7 @@
 			var minPosition = (tick.values.min.getTime() < event.data.options.bounds.min) ? new Date(event.data.options.bounds.min) : tick.values.min;
 			
 			if (maxPosition.getTime() == maxValue.getTime() || minPosition.getTime() == minValue.getTime()){
-				event.data.values(minPosition, maxPosition);
+				event.data._setValues(minPosition, maxPosition);
 			} else if (minPosition.getTime() == minValue.getTime() && maxPosition.getTime() == maxValue.getTime()){
 				//Do nothing
 			} else {
@@ -671,11 +672,30 @@
 				var distToRightHandler = Math.abs(avg - event.data.values().max);
 				var distToLeftHandler = Math.abs(avg - event.data.values().min);
 				if (distToRightHandler < distToLeftHandler){
-					event.data.values(minValue, maxPosition);
+					event.data._setValues(minValue, maxPosition);
 				} else {
-					event.data.values(minPosition, maxValue);
+					event.data._setValues(minPosition, maxValue);
 				}
 			}
+		},
+		
+		_setValues: function(min, max){
+			var val;
+
+			if (typeof min !== "undefined" && typeof max !== "undefined"){
+				if (!this._initialized){
+					this._values.min = min;
+					this._values.max = max;
+					return this._values;
+				}
+
+				val = this._bar("values", min, max);
+				this._changed(false);
+			}else{
+				val = this._bar("values", min, max);
+			}
+
+			return val;
 		},
 		
 		_setRulerParameters: function(){

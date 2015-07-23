@@ -33,6 +33,16 @@
 				max: this.options.defaultValues.max.valueOf()
 			};
 		},
+		
+		_createLabel: function(label, handle){
+			var result = $.ui.rangeSlider.prototype._createLabel.apply(this, [label, handle]);
+			
+			if (label === null){
+				result.bind("valueChange", $.proxy(this._onValueChange, this));
+			}
+
+			return result;
+		},
 
 		_setRulerParameters: function(){
 			this.ruler.ruler({
@@ -52,6 +62,10 @@
 
 		_handleType: function(){
 			return "dateRangeSliderHandle";
+		},
+		
+		_labelType: function(){
+			return "dateRangeSliderLabel";
 		},
 
 		option: function(key){
@@ -83,6 +97,20 @@
 					return formatter(new Date(value));
 				};
 			}(formatter));
+		},
+		
+		_onValueChange: function(event, data){
+			var changed = false;
+
+			if (data.isLeft){
+				changed = this._values.min !== this.min(data.value);
+			}else{
+				changed = this._values.max !== this.max(data.value);
+			}
+
+			if (changed){
+				this._trigger("userValuesChanged");
+			}
 		},
 
 		values: function(min, max){
